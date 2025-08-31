@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>   جرب وكتّب اسمك  ! </title>
+    <style>
+        /* Font Face Declarations */
+        @font-face {
+            font-family: 'Ar1';
+            src: url('FONT.AR.1.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'Ar2';
+            src: url('FONT.AR.2.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'Ar3';
+            src: url('FONT.AR.3.otf') format('opentype');
+        }
+        @font-face {
+            font-family: 'Fr1';
+            src: url('FONT.FR.1.otf') format('opentype');
+        }
+        @font-face {
+            font-family: 'Fr2';
+            src: url('FONT.FR.2.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'Fr3';
+            src: url('FONT.AR.3.otf') format('opentype');
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-image: url('BG.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .main-container {
+            display: flex;
+            max-width: 1400px;
+            width: 100%;
+            gap: 40px;
+            align-items: flex-start;
+        }
+
+        .brush-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .brush-container {
+            position: relative;
+            width: 100%;
+            max-width: 1000px;
+            margin-bottom: 30px;
+        }
+
+        .brush-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3));
+        }
+
+        .text-overlay {
+            position: absolute;
+            top: 48%;
+            left: 35%;
+            transform: translate(-50%, -50%);
+            font-size: 100px;
+            font-weight: bold;
+            color: #1a1a1a;
+            text-align: center;
+            width: 70%;
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+            line-height: 1.2;
+        }
+
+        .text-overlay.arabic-font {
+            font-size: 100px;
+        }
+
+        .controls-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 400px;
+            position: sticky;
+            top: 100px;
+            margin-top: 50px;
+        }
+
+        .panel-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            text-align: center;
+            position: relative;
+        }
+
+        .panel-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #3498db, #9b59b6);
+            border-radius: 2px;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-label {
+            display: block;
+            font-weight: 600;
+            color: #34495e;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .text-input {
+            width: 100%;
+            padding: 15px 12px;
+            border: 2px solid #e0e6ed;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+            text-align: left;
+            text-indent: 0;
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .text-input::placeholder {
+            color: #95a5a6;
+            text-align: left;
+        }
+
+        .font-select {
+            width: 100%;
+            padding: 15px 18px;
+            border: 2px solid #e0e6ed;
+            border-radius: 12px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.9);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 16px;
+            padding-right: 45px;
+        }
+
+        .font-select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .confirm-btn {
+            width: 100%;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .confirm-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
+            background: linear-gradient(135deg, #2980b9, #1f5f8b);
+        }
+
+        .confirm-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 8px;
+            text-align: center;
+            min-height: 20px;
+        }
+
+        .success-message {
+            color: #27ae60;
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 8px;
+            text-align: center;
+            min-height: 20px;
+        }
+
+        .preview-text {
+            font-size: 18px;
+            color: #7f8c8d;
+            text-align: center;
+            margin-top: 15px;
+            font-style: italic;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .main-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .controls-panel {
+                width: 100%;
+                max-width: 500px;
+                position: static;
+                margin-top: 80px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .main-container {
+                gap: 25px;
+            }
+            
+            .brush-container {
+                max-width: 600px;
+            }
+            
+            .text-overlay {
+                font-size: 38px;
+                width: 80%;
+                left: 35%;
+                top: 48%;
+            }
+            
+            .text-overlay.arabic-font {
+                font-size: 45px;
+            }
+            
+            .controls-panel {
+                padding: 25px;
+            }
+            
+            .panel-title {
+                font-size: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .brush-container {
+                max-width: 450px;
+            }
+            
+            .text-overlay {
+                font-size: 30px;
+                width: 85%;
+                left: 35%;
+                top: 48%;
+            }
+            
+            .text-overlay.arabic-font {
+                font-size: 35px;
+            }
+            
+            .controls-panel {
+                padding: 20px;
+            }
+        }
+
+        /* Animation for text appearance */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -30%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+
+        .text-overlay.animate {
+            animation: fadeInUp 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="brush-section">
+            <div class="brush-container">
+                <img src="BRUSH.NO.BG.png" alt="Decorative Brush" class="brush-image">
+                <div class="text-overlay" id="textOverlay"></div>
+            </div>
+        </div>
+
+        <div class="controls-panel">
+            <h2 class="panel-title"> ! جرب وكتّب اسمك</h2>
+            
+            <div class="input-group">
+                <label for="nameInput" class="input-label">: أكتب الاسم بالعربي او الفرنسي  </label>
+                <input 
+                    type="text" 
+                    id="nameInput" 
+                    class="text-input" 
+                    placeholder="أكتب اسمك هنا..." 
+                    maxlength="15"
+                    autocomplete="off"
+                >
+            </div>
+
+<div class="input-group">
+  <label for="fontSelect" class="input-label">: اختر نمط الخط</label>
+  <select id="fontSelect" class="font-select">
+    <option value="" selected disabled hidden>-- اختر من هنا --</option> <!-- Forces empty start -->
+    <option value="Ar1">خط عربي 1</option>
+    <option value="Ar2">خط عربي 2</option>
+    <option value="Ar3">خط عربي 3</option>
+    <option value="Fr1">خط فرنسي 1</option>
+    <option value="Fr2">خط فرنسي 2</option>
+    <option value="Fr3">خط فرنسي 3</option>
+  </select>
+</div>
+
+<script>
+  // Reset on page load
+  window.addEventListener('load', () => {
+    document.getElementById('fontSelect').selectedIndex = 0; // Selects the blank option
+  });
+</script>
+
+            <button id="confirmBtn" class="confirm-btn">
+                اضغط هنا
+            </button>
+
+            <div id="message" class="error-message"></div>
+            
+          
+        </div>
+    </div>
+
+    <script>
+        const nameInput = document.getElementById('nameInput');
+        const fontSelect = document.getElementById('fontSelect');
+        const confirmBtn = document.getElementById('confirmBtn');
+        const textOverlay = document.getElementById('textOverlay');
+        const message = document.getElementById('message');
+
+        // Font mapping for Arabic fonts
+        const arabicFonts = ['Ar1', 'Ar2', 'Ar3'];
+
+        function updateText() {
+            const name = nameInput.value.trim();
+            const selectedFont = fontSelect.value;
+            
+            if (name.length > 15) {
+                message.textContent = "Name must not exceed 15 characters";
+                message.className = 'error-message';
+                textOverlay.textContent = '';
+                return;
+            }
+            
+            if (name === '') {
+                message.textContent = '';
+                textOverlay.textContent = '';
+                return;
+            }
+            
+            // Apply font
+            textOverlay.style.fontFamily = selectedFont;
+            
+            // Apply Arabic font styling
+            if (arabicFonts.includes(selectedFont)) {
+                textOverlay.classList.add('arabic-font');
+            } else {
+                textOverlay.classList.remove('arabic-font');
+            }
+            
+            // Update text
+            textOverlay.textContent = name;
+            textOverlay.classList.add('animate');
+            
+            // Show success message
+            message.textContent = "! تمت التجربة بنجاح";
+            message.className = 'success-message';
+            
+            // Remove animation class after animation completes
+            setTimeout(() => {
+                textOverlay.classList.remove('animate');
+            }, 500);
+        }
+
+        function clearMessage() {
+            message.textContent = '';
+        }
+
+        // Event listeners
+        confirmBtn.addEventListener('click', updateText);
+        
+        nameInput.addEventListener('input', clearMessage);
+        nameInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                updateText();
+            }
+        });
+        
+        fontSelect.addEventListener('change', function() {
+            if (textOverlay.textContent) {
+                updateText();
+            }
+        });
+
+        // Real-time preview on font change
+        fontSelect.addEventListener('change', function() {
+            if (textOverlay.textContent) {
+                const selectedFont = fontSelect.value;
+                textOverlay.style.fontFamily = selectedFont;
+                
+                if (arabicFonts.includes(selectedFont)) {
+                    textOverlay.classList.add('arabic-font');
+                } else {
+                    textOverlay.classList.remove('arabic-font');
+                }
+            }
+        });
+
+        // Focus management
+        nameInput.addEventListener('focus', function() {
+            this.select();
+            // Ensure cursor is at the beginning for better alignment
+            this.setSelectionRange(0, 0);
+        });
+
+        // Initialize with first font
+        fontSelect.value = 'Fr1';
+    </script>
+</body>
+</html> 
