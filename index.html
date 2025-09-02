@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>   جرب وكتّب اسمك  ! </title>
     
-    <!-- html2canvas library for screenshots -->
+    <!-- html2canvas library for high-quality image capture -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- html-to-image library for reliable DOM capture -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
     
     <style>
         /* Font Face Declarations */
@@ -247,49 +250,6 @@
             transform: translateY(-1px);
         }
 
-        /* Screenshot Button Styles */
-        .screenshot-btn {
-            width: 100%;
-            padding: 16px 24px;
-            background: linear-gradient(135deg, #27ae60, #2ecc71);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
-            margin-top: 15px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .screenshot-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(39, 174, 96, 0.4);
-            background: linear-gradient(135deg, #2ecc71, #27ae60);
-        }
-
-        .screenshot-btn:active {
-            transform: translateY(-1px);
-        }
-
-        .screenshot-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .screenshot-btn:hover::before {
-            left: 100%;
-        }
-
         .error-message {
             color: #e74c3c;
             font-size: 14px;
@@ -377,7 +337,7 @@
             }
             
             .text-overlay.arabic-font {
-                font-size: 35px;
+                font-size: 80px;
             }
             
             .controls-panel {
@@ -525,7 +485,39 @@
         }
 
         /* Download Button Styles */
+        .download-btn {
+            width: 100%;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+            margin-top: 15px;
+            display: none;
+            position: relative;
+            overflow: hidden;
+        }
 
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(39, 174, 96, 0.4);
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+
+        .download-btn.show {
+            display: block;
+            animation: slideInUp 0.5s ease-out;
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
         /* Enhanced Input Focus Effects */
         .text-input:focus,
@@ -795,12 +787,13 @@
                 اضغط هنا
             </button>
 
-            <button id="screenshotBtn" class="screenshot-btn">
-                📷 لقطة شاشة
+            <button id="downloadBtn" class="download-btn">
+                📷 تحميل الصورة
             </button>
 
             <div class="message-container">
                 <div id="message" class="error-message"></div>
+                <div class="loading-spinner" id="loadingSpinner"></div>
             </div>
 
             <div class="shortcuts-hint">
@@ -815,9 +808,10 @@
         const nameInput = document.getElementById('nameInput');
         const fontSelect = document.getElementById('fontSelect');
         const confirmBtn = document.getElementById('confirmBtn');
-        const screenshotBtn = document.getElementById('screenshotBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
         const textOverlay = document.getElementById('textOverlay');
         const message = document.getElementById('message');
+        const loadingSpinner = document.getElementById('loadingSpinner');
         const brushContainer = document.querySelector('.brush-container');
 
         // Font mapping for Arabic fonts
@@ -846,7 +840,26 @@
             message.style.display = 'none';
         }
 
+        function showLoading() {
+            loadingSpinner.style.display = 'block';
+            message.style.display = 'none';
+            
+            // Update button text to show processing
+            if (downloadBtn) {
+                downloadBtn.innerHTML = '⏳ جاري التحميل...';
+                downloadBtn.disabled = true;
+            }
+        }
 
+        function hideLoading() {
+            loadingSpinner.style.display = 'none';
+            
+            // Reset button text
+            if (downloadBtn) {
+                downloadBtn.innerHTML = '📷 تحميل الصورة';
+                downloadBtn.disabled = false;
+            }
+        }
 
         function adjustTextSize(text) {
             // Remove existing size classes
@@ -867,12 +880,14 @@
             if (name === '') {
                 showMessage(errorMessages.empty, 'error-message');
                 textOverlay.textContent = '';
+                downloadBtn.classList.remove('show');
                 return;
             }
             
             if (name.length > 15) {
                 showMessage(errorMessages.tooLong, 'error-message');
                 textOverlay.textContent = '';
+                downloadBtn.classList.remove('show');
                 return;
             }
             
@@ -907,6 +922,9 @@
                 hideLoading();
                 showMessage(successMessages.success, 'success-message');
                 
+                // Show download button
+                downloadBtn.classList.add('show');
+                
                 // Remove animation class after animation completes
                 setTimeout(() => {
                     textOverlay.classList.remove('animate');
@@ -914,46 +932,360 @@
             }, 300);
         }
 
+        function downloadImage() {
+            if (!textOverlay.textContent) {
+                showMessage("لا يوجد نص للتحميل", 'error-message');
+                return;
+            }
 
+            showLoading();
+            
+            // Try the simpler direct capture method first
+            captureVisibleBrush();
+        }
+
+        function captureWithHtmlToImage() {
+            try {
+                // Create a temporary container for capture
+                const captureContainer = document.createElement('div');
+                captureContainer.style.position = 'absolute';
+                captureContainer.style.left = '-9999px';
+                captureContainer.style.top = '-9999px';
+                captureContainer.style.width = '800px';
+                captureContainer.style.height = '600px';
+                captureContainer.style.background = 'white';
+                captureContainer.style.overflow = 'hidden';
+                captureContainer.style.zIndex = '-1';
+                
+                // Clone the brush container
+                const brushClone = brushContainer.cloneNode(true);
+                
+                // Ensure the brush image is properly loaded
+                const brushImg = brushClone.querySelector('.brush-image');
+                if (brushImg) {
+                    brushImg.style.width = '100%';
+                    brushImg.style.height = 'auto';
+                    brushImg.style.display = 'block';
+                    brushImg.style.maxWidth = '100%';
+                }
+                
+                // Clone and style the text overlay
+                const textClone = textOverlay.cloneNode(true);
+                textClone.style.position = 'absolute';
+                textClone.style.top = '48%';
+                textClone.style.left = '35%';
+                textClone.style.transform = 'translate(-50%, -50%)';
+                textClone.style.width = '70%';
+                textClone.style.textAlign = 'center';
+                textClone.style.lineHeight = '1.2';
+                textClone.style.fontWeight = 'bold';
+                textClone.style.fontSize = '100px'; // Fixed size
+                textClone.style.color = '#1a1a1a';
+                textClone.style.textShadow = '2px 2px 4px rgba(255, 255, 255, 0.8)';
+                textClone.style.zIndex = '10';
+                
+                // Apply the selected font
+                if (fontSelect.value) {
+                    textClone.style.fontFamily = fontSelect.value;
+                }
+                
+                // Copy the text content
+                textClone.textContent = textOverlay.textContent;
+                
+                // Add to capture container
+                captureContainer.appendChild(brushClone);
+                captureContainer.appendChild(textClone);
+                document.body.appendChild(captureContainer);
+                
+                // Wait for everything to render and images to load
+                setTimeout(() => {
+                    // Use html-to-image to capture
+                    if (typeof htmlToImage !== 'undefined') {
+                        htmlToImage.toPng(captureContainer, {
+                            quality: 1.0,
+                            width: 800,
+                            height: 600,
+                            style: {
+                                'transform': 'scale(1)',
+                                'transform-origin': 'top left'
+                            }
+                        }).then(function(dataUrl) {
+                            // Success - download the image
+                            downloadDataUrl(dataUrl, "تم التحميل بنجاح!");
+                            document.body.removeChild(captureContainer);
+                        }).catch(function(error) {
+                            console.error('html-to-image failed:', error);
+                            // Fallback to basic method
+                            createBasicImageWithBrush();
+                            document.body.removeChild(captureContainer);
+                        });
+                    } else {
+                        console.error('html-to-image not available');
+                        createBasicImageWithBrush();
+                        document.body.removeChild(captureContainer);
+                    }
+                }, 1000); // Wait longer for images to load
+                
+            } catch (error) {
+                console.error('Capture method failed:', error);
+                createBasicImageWithBrush();
+            }
+        }
+
+        function captureVisibleBrush() {
+            // Alternative method: capture the visible brush section directly
+            try {
+                if (typeof htmlToImage !== 'undefined') {
+                    // Create a wrapper div around the brush section
+                    const wrapper = document.createElement('div');
+                    wrapper.style.position = 'absolute';
+                    wrapper.style.left = '-9999px';
+                    wrapper.style.top = '-9999px';
+                    wrapper.style.width = '800px';
+                    wrapper.style.height = '600px';
+                    wrapper.style.background = 'white';
+                    wrapper.style.overflow = 'hidden';
+                    
+                    // Clone the brush container
+                    const brushClone = brushContainer.cloneNode(true);
+                    
+                    // Ensure the brush image is properly loaded and visible
+                    const brushImg = brushClone.querySelector('.brush-image');
+                    if (brushImg) {
+                        brushImg.style.width = '100%';
+                        brushImg.style.height = 'auto';
+                        brushImg.style.display = 'block';
+                        brushImg.style.maxWidth = '100%';
+                        brushImg.style.position = 'relative';
+                        brushImg.style.zIndex = '1';
+                    }
+                    
+                    // Clone and style the text overlay
+                    const textClone = textOverlay.cloneNode(true);
+                    textClone.style.position = 'absolute';
+                    textClone.style.top = '48%';
+                    textClone.style.left = '35%';
+                    textClone.style.transform = 'translate(-50%, -50%)';
+                    textClone.style.width = '70%';
+                    textClone.style.textAlign = 'center';
+                    textClone.style.lineHeight = '1.2';
+                    textClone.style.fontWeight = 'bold';
+                    textClone.style.fontSize = '100px'; // Fixed size
+                    textClone.style.color = '#1a1a1a';
+                    textClone.style.textShadow = '2px 2px 4px rgba(255, 255, 255, 0.8)';
+                    textClone.style.zIndex = '10';
+                    
+                    // Apply the selected font
+                    if (fontSelect.value) {
+                        textClone.style.fontFamily = fontSelect.value;
+                    }
+                    
+                    // Copy the text content
+                    textClone.textContent = textOverlay.textContent;
+                    
+                    wrapper.appendChild(brushClone);
+                    wrapper.appendChild(textClone);
+                    document.body.appendChild(wrapper);
+                    
+                    // Wait for rendering and image loading
+                    setTimeout(() => {
+                        htmlToImage.toPng(wrapper, {
+                            quality: 1.0,
+                            width: 800,
+                            height: 600,
+                            backgroundColor: 'white',
+                            filter: function(node) {
+                                // Ensure images are included
+                                return true;
+                            }
+                        }).then(function(dataUrl) {
+                            downloadDataUrl(dataUrl, "تم التحميل بنجاح! (طريقة مباشرة)");
+                            document.body.removeChild(wrapper);
+                        }).catch(function(error) {
+                            console.error('Direct capture failed:', error);
+                            createBasicImageWithBrush();
+                            document.body.removeChild(wrapper);
+                        });
+                    }, 1000); // Wait longer for image to load
+                    
+                } else {
+                    createBasicImageWithBrush();
+                }
+            } catch (error) {
+                console.error('Direct capture failed:', error);
+                createBasicImageWithBrush();
+            }
+        }
+
+        function createBasicImageWithBrush() {
+            // Create a high-quality image using canvas
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Set high resolution
+            canvas.width = 1600;
+            canvas.height = 1200;
+            
+            // White background
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Load and draw the brush image
+            const brushImg = new Image();
+            brushImg.crossOrigin = 'anonymous';
+            
+            brushImg.onload = function() {
+                try {
+                    console.log('Brush image loaded for canvas:', brushImg.naturalWidth, 'x', brushImg.naturalHeight);
+                    
+                    // Calculate dimensions to maintain aspect ratio
+                    const aspectRatio = brushImg.naturalWidth / brushImg.naturalHeight;
+                    let drawWidth = canvas.width * 0.8;
+                    let drawHeight = drawWidth / aspectRatio;
+                    
+                    // Center the image
+                    const x = (canvas.width - drawWidth) / 2;
+                    const y = (canvas.height - drawHeight) / 2;
+                    
+                    // Draw the brush image
+                    ctx.drawImage(brushImg, x, y, drawWidth, drawHeight);
+                    
+                    // Add text with the exact font and styling
+                    const fontSize = '100px'; // Fixed size
+                    const fontFamily = fontSelect.value || 'Arial, sans-serif';
+                    
+                    ctx.font = `${fontSize} ${fontFamily}`;
+                    ctx.fillStyle = '#1a1a1a';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    
+                    // Position text (matching the visual position)
+                    const textX = canvas.width * 0.35;
+                    const textY = canvas.height * 0.48;
+                    
+                    // Add shadow effect
+                    ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+                    ctx.shadowBlur = 8;
+                    ctx.shadowOffsetX = 4;
+                    ctx.shadowOffsetY = 4;
+                    
+                    // Draw text with shadow
+                    ctx.fillText(textOverlay.textContent, textX, textY);
+                    
+                    // Remove shadow and draw text again for clarity
+                    ctx.shadowColor = 'transparent';
+                    ctx.shadowBlur = 0;
+                    ctx.shadowOffsetX = 0;
+                    ctx.shadowOffsetY = 0;
+                    ctx.fillText(textOverlay.textContent, textX, textY);
+                    
+                    // Download the image
+                    downloadCanvas(canvas, "تم التحميل بنجاح! (طريقة بديلة)");
+                    
+                } catch (error) {
+                    console.error('Error creating basic image:', error);
+                    createTextOnlyImage();
+                }
+            };
+            
+            brushImg.onerror = function() {
+                console.error('Failed to load brush image for canvas');
+                console.error('Image path:', brushImg.src);
+                createTextOnlyImage();
+            };
+            
+            // Load the image
+            brushImg.src = 'BRUSH.NO.BG.png';
+        }
+
+        function createTextOnlyImage() {
+            // Create a simple text image as last resort
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = 800;
+            canvas.height = 400;
+            
+            // White background
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Add text with the chosen font and fixed size
+            const fontSize = '100px'; // Fixed size
+            const fontFamily = fontSelect.value || 'Arial, sans-serif';
+            
+            ctx.font = `${fontSize} ${fontFamily}`;
+            ctx.fillStyle = '#1a1a1a';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            ctx.fillText(textOverlay.textContent, canvas.width/2, canvas.height/2);
+            
+            // Download
+            downloadCanvas(canvas, "تم التحميل بنجاح! (صورة نصية)");
+        }
+
+
+
+        function downloadCanvas(canvas, successMessage) {
+            try {
+                // Convert to blob for better compatibility
+                canvas.toBlob(function(blob) {
+                    if (blob) {
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = `brush-${textOverlay.textContent}.png`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(url);
+                        
+                        hideLoading();
+                        showMessage(successMessage, 'success-message');
+                    } else {
+                        throw new Error('Failed to create blob');
+                    }
+                }, 'image/png', 1.0);
+                
+            } catch (error) {
+                console.error('Download failed:', error);
+                hideLoading();
+                showMessage("حدث خطأ في التحميل. حاول مرة أخرى.", 'error-message');
+            }
+        }
+
+        function downloadDataUrl(dataUrl, successMessage) {
+            try {
+                const link = document.createElement('a');
+                link.href = dataUrl;
+                link.download = `brush-${textOverlay.textContent}.png`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                hideLoading();
+                showMessage(successMessage, 'success-message');
+            } catch (error) {
+                console.error('Download failed:', error);
+                hideLoading();
+                showMessage("حدث خطأ في التحميل. حاول مرة أخرى.", 'error-message');
+            }
+        }
 
         function clearMessage() {
             hideMessage();
         }
 
-        // Simple screenshot function
-        function takeScreenshot() {
-            screenshotBtn.innerHTML = '⏳ جاري التحميل...';
-            screenshotBtn.disabled = true;
-            
-            // Use html2canvas to screenshot the entire page
-            html2canvas(document.body, {
-                allowTaint: true,
-                useCORS: true,
-                scale: 1,
-                backgroundColor: '#ffffff',
-                logging: false
-            }).then(function(canvas) {
-                // Create download link
-                const link = document.createElement('a');
-                link.download = 'screenshot.png';
-                link.href = canvas.toDataURL();
-                link.click();
-                
-                // Reset button
-                screenshotBtn.innerHTML = '📷 لقطة شاشة';
-                screenshotBtn.disabled = false;
-                showMessage('تم تحميل لقطة الشاشة بنجاح!', 'success-message');
-            }).catch(function(error) {
-                console.error('Screenshot failed:', error);
-                screenshotBtn.innerHTML = '📷 لقطة شاشة';
-                screenshotBtn.disabled = false;
-                showMessage('حدث خطأ في التقاط الشاشة', 'error-message');
-            });
-        }
-
         // Event listeners
         confirmBtn.addEventListener('click', updateText);
-        screenshotBtn.addEventListener('click', takeScreenshot);
+        downloadBtn.addEventListener('click', function() {
+            console.log('Download button clicked');
+            console.log('Text overlay content:', textOverlay.textContent);
+            console.log('Text overlay font family:', textOverlay.style.fontFamily);
+            console.log('Text overlay classes:', textOverlay.className);
+            downloadImage();
+        });
         
         nameInput.addEventListener('input', clearMessage);
         nameInput.addEventListener('keypress', function(e) {
@@ -996,7 +1328,12 @@
                         e.preventDefault();
                         updateText();
                         break;
-
+                    case 's':
+                        e.preventDefault();
+                        if (downloadBtn.classList.contains('show')) {
+                            downloadImage();
+                        }
+                        break;
                 }
             }
         });
@@ -1020,7 +1357,16 @@
             testImg.src = 'BRUSH.NO.BG.png';
         }
 
-
+        // Test html-to-image library
+        function testHtmlToImage() {
+            if (typeof htmlToImage !== 'undefined') {
+                console.log('✅ html-to-image library loaded successfully');
+                console.log('Available methods:', Object.keys(htmlToImage));
+            } else {
+                console.error('❌ html-to-image library not available');
+                showMessage("تحذير: مكتبة html-to-image غير متوفرة", 'error-message');
+            }
+        }
 
         // Test brush image loading for canvas
         function testBrushImageForCanvas() {
@@ -1049,6 +1395,9 @@
             
             // Test image loading
             testImageLoading();
+            
+            // Test html-to-image library
+            testHtmlToImage();
             
             // Test brush image for canvas
             testBrushImageForCanvas();
