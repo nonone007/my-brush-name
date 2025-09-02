@@ -1088,7 +1088,7 @@
                     document.body.appendChild(wrapper);
                     
                     // Wait for rendering and image loading
-                  /*  setTimeout(() => {
+                   setTimeout(() => {
                         htmlToImage.toPng(wrapper, {
                             quality: 1.0,
                             width: 800,
@@ -1098,9 +1098,7 @@
                                 // Ensure images are included
                                 return true;
                             }
-                        }).then(function(dataUrl) {
-                            downloadDataUrl(dataUrl, "تم التحميل بنجاح! (طريقة مباشرة)");
-                            document.body.removeChild(wrapper);
+                
                         }).catch(function(error) {
                             console.error('Direct capture failed:', error);
                             createBasicImageWithBrush();
@@ -1114,7 +1112,7 @@
             } catch (error) {
                 console.error('Direct capture failed:', error);
                 createBasicImageWithBrush();
-            } */
+            } 
         } 
 
         function createBasicImageWithBrush() {
