@@ -89,7 +89,7 @@
             top: 48%;
             left: 35%;
             transform: translate(-50%, -50%);
-            font-size: 100px;
+            font-size: 50px;
             font-weight: bold;
             color: #1a1a1a;
             text-align: center;
@@ -102,7 +102,7 @@
         }
 
         .text-overlay.arabic-font {
-            font-size: 100px;
+            font-size: 50px;
         }
 
         .text-overlay.long-text {
@@ -349,11 +349,10 @@
                 width: 80%;
                 left: 35%;
                 top: 48%;
+                transform: translate(-50%, -50%) scale(var(--mobile-scale, 1));
             }
             
-            .text-overlay.arabic-font {
-                font-size: 45px;
-            }
+            
             
             .controls-panel {
                 padding: 25px;
@@ -374,11 +373,10 @@
                 width: 85%;
                 left: 35%;
                 top: 48%;
+                transform: translate(-50%, -50%) scale(var(--mobile-scale, 1));
             }
             
-            .text-overlay.arabic-font {
-                font-size: 35px;
-            }
+            
             
             .controls-panel {
                 padding: 20px;
@@ -479,7 +477,7 @@
             top: 48%;
             left: 35%;
             transform: translate(-50%, -50%);
-            font-size: 100px;
+            font-size: clamp(28px, 11.2vw, 84px);
             font-weight: bold;
             color: #1a1a1a;
             text-align: center;
@@ -491,16 +489,27 @@
             overflow-wrap: break-word;
         }
 
-        .text-overlay.arabic-font {
-            font-size: 100px;
-        }
+        
 
         .text-overlay.long-text {
-            font-size: 80px;
+            font-size: clamp(25px, 8.4vw, 59px);
         }
 
         .text-overlay.very-long-text {
-            font-size: 60px;
+            font-size: clamp(22px, 7vw, 45px);
+        }
+
+        /* Restore larger Arabic sizes on desktop */
+        @media (min-width: 1024px) {
+            .text-overlay.arabic-font {
+                font-size: 100px;
+            }
+            .text-overlay.arabic-font.long-text {
+                font-size: 80px;
+            }
+            .text-overlay.arabic-font.very-long-text {
+                font-size: 60px;
+            }
         }
 
         /* Enhanced Button Styles */
@@ -738,7 +747,23 @@
                 height: 3px;
             }
         }
-    </style>
+    
+/* Arabic font handling - keep size consistent */
+.text-overlay.arabic-font {
+    font-size: clamp(32px, 10vw, 84px);
+}
+
+/* Long Arabic text */
+.text-overlay.arabic-font.long-text {
+    font-size: clamp(28px, 8vw, 64px);
+}
+
+/* Very long Arabic text */
+.text-overlay.arabic-font.very-long-text {
+    font-size: clamp(24px, 7vw, 48px);
+}
+
+</style>
 </head>
 <body>
     <div class="particles" id="particles"></div>
@@ -820,6 +845,14 @@
 
         // Font mapping for Arabic fonts
         const arabicFonts = ['Ar1', 'Ar2', 'Ar3'];
+        const mobileFontScale = {
+        'Ar1': 1.6,
+        'Ar2': 1.6,
+        'Ar3': 1.6,
+        'Fr1': 1,
+        'Fr2': 1,
+        'Fr3': 1
+    };
 
         // Error messages in Arabic
         const errorMessages = {
@@ -903,6 +936,15 @@ function adjustTextSize(text) {
                 } else {
                     textOverlay.classList.remove('arabic-font');
                 }
+
+                // Normalize mobile size per font
+                const isMobile = window.matchMedia && (window.matchMedia('(max-width: 768px)').matches || window.matchMedia('(max-width: 480px)').matches);
+                const scale = mobileFontScale[selectedFont] || 1;
+                if (isMobile) {
+                    textOverlay.style.setProperty('--mobile-scale', scale);
+                } else {
+                    textOverlay.style.removeProperty('--mobile-scale');
+                }
                 
                 // Update text and adjust size
                 textOverlay.textContent = name;
@@ -957,6 +999,15 @@ function adjustTextSize(text) {
                     textOverlay.classList.add('arabic-font');
                 } else {
                     textOverlay.classList.remove('arabic-font');
+                }
+
+                // Update mobile scaling live
+                const isMobile = window.matchMedia && (window.matchMedia('(max-width: 768px)').matches || window.matchMedia('(max-width: 480px)').matches);
+                const scale = mobileFontScale[selectedFont] || 1;
+                if (isMobile) {
+                    textOverlay.style.setProperty('--mobile-scale', scale);
+                } else {
+                    textOverlay.style.removeProperty('--mobile-scale');
                 }
             }
         });
