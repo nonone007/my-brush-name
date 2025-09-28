@@ -12,6 +12,60 @@
     }
   })();
 </script>
+<script>
+  (function () {
+    const prefix = "/تجربة-الاسم";
+    const baseOk =
+      location.pathname.startsWith(prefix) ||
+      location.pathname.startsWith("/%D8%AA%D8%AC%D8%...".replace("...", "G%D8%B1%D8%A8%D8%A9-%D8%A7%D9%84%D8%A7%D8%B3%D9%85")); // rough check
+
+    const toTest = [
+      "BG.png",
+      "BRUSH.NO.BG.png",
+      "FONT.AR.1.ttf",
+      "FONT.AR.2.ttf",
+      "FONT.AR.3.otf",
+      "FONT.FR.1.otf",
+      "FONT.FR.2.ttf"
+    ];
+
+    function full(u) {
+      // resolve like the browser would (relative to /تجربة-الاسم/)
+      return (baseOk ? prefix + "/" : "/") + u + "?diag=" + Date.now();
+    }
+
+    const box = document.createElement("div");
+    box.style.cssText = "position:fixed;right:10px;bottom:10px;max-width:90vw;background:#000c;color:#fff;padding:10px 12px;border-radius:10px;font:12px/1.4 system-ui,Arial;z-index:99999;opacity:.9";
+    box.innerHTML = "<b>Diag</b>: testing assets…";
+    document.body.appendChild(box);
+
+    let done = 0;
+    toTest.forEach((name) => {
+      const url = full(name);
+      // use HEAD to avoid downloading big files
+      fetch(url, { method: "HEAD", cache: "no-store" })
+        .then((r) => {
+          const ok = r.ok;
+          const ct = r.headers.get("content-type") || "(no ct)";
+          line(name + " → " + (ok ? "✅ " + r.status + " " + ct : "❌ " + r.status));
+        })
+        .catch((e) => line(name + " → ❌ error " + e));
+    });
+
+    function line(t) {
+      const p = document.createElement("div");
+      p.textContent = t;
+      box.appendChild(p);
+      done++;
+      if (done === toTest.length) {
+        const hint = document.createElement("div");
+        hint.style.marginTop = "6px";
+        hint.innerHTML = 'Open any ❌ above directly to see exact error.';
+        box.appendChild(hint);
+      }
+    }
+  })();
+</script>
 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
