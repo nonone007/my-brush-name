@@ -7,18 +7,19 @@
 
   <!-- Inject <base href="/just/"> only when running under /just on fazavip.tn -->
   <script>
-    (function () {
-      try {
-        var u = new URL(window.location.href);
-        // Adjust condition if you also want it active on www.fazavip.tn
-        if (u.hostname.endsWith("fazavip.tn") && u.pathname.startsWith("/just")) {
-          var base = document.createElement("base");
-          base.setAttribute("href", "/just/");
-          document.head.prepend(base);
-        }
-      } catch (_) {}
-    })();
-  </script>
+  (function () {
+    try {
+      var u = new URL(window.location.href);
+      // فعّل <base> فقط عندما الصفحة تُخدم تحت /تجربة-الاسم على fazavip.tn
+      if (u.hostname.endsWith("fazavip.tn") && u.pathname.startsWith("/تجربة-الاسم")) {
+        var base = document.createElement("base");
+        base.setAttribute("href", "/تجربة-الاسم/");
+        document.head.prepend(base);
+      }
+    } catch (_) {}
+  })();
+</script>
+
 
   <!-- html2canvas for screenshots (kept as-is) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
