@@ -1,483 +1,1119 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no"
-  />
-  <title>جرب وكتّب اسمك !</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>   جرب وكتّب اسمك  ! </title>
+    
+    <!-- html2canvas library for screenshots -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <base href="https://nonone007.github.io/my-brush-name/">
 
-  <!-- html2canvas -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* Font Face Declarations */
+        @font-face {
+            font-family: 'Ar1';
+            src: url('FONT.AR.1.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'Ar2';
+            src: url('FONT.AR.2.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'Ar3';
+            src: url('FONT.AR.3.otf') format('opentype');
+        }
+        @font-face {
+            font-family: 'Fr1';
+            src: url('FONT.FR.1.otf') format('opentype');
+        }
+        @font-face {
+            font-family: 'Fr2';
+            src: url('FONT.FR.2.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'Fr3';
+            src: url('FONT.AR.3.otf') format('opentype');
+        }
 
-  <style>
-    /* =================== Fonts (مع تصحيح Fr3 + تحسين التحميل) =================== */
-    @font-face {
-      font-family: 'Ar1';
-      src: url('FONT.AR.1.ttf') format('truetype');
-      font-display: swap;
-    }
-    @font-face {
-      font-family: 'Ar2';
-      src: url('FONT.AR.2.ttf') format('truetype');
-      font-display: swap;
-    }
-    @font-face {
-      font-family: 'Ar3';
-      src: url('FONT.AR.3.otf') format('opentype');
-      font-display: swap;
-    }
-    @font-face {
-      font-family: 'Fr1';
-      src: url('FONT.FR.1.otf') format('opentype');
-      font-display: swap;
-    }
-    @font-face {
-      font-family: 'Fr2';
-      src: url('FONT.FR.2.ttf') format('truetype');
-      font-display: swap;
-    }
-    /* كان Fr3 يشير لملف عربي بالغلط — نخليه على نفس ملف Fr2 */
-    @font-face {
-      font-family: 'Fr3';
-      src: url('FONT.FR.2.ttf') format('truetype');
-      font-display: swap;
-    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-image: url('BG.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
 
-    /* يمنع تغيّر الحجم المفاجئ على iOS */
-    html { -webkit-text-size-adjust: 100%; }
+        .main-container {
+            display: flex;
+            max-width: 1400px;
+            width: 100%;
+            gap: 40px;
+            align-items: flex-start;
+        }
 
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-image: url('BG.png');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      /* المشكلة على الموبايل مع background-attachment: fixed؛نشيلها على الموبايل بأسفل */
-      background-attachment: fixed;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      overflow-x: hidden;
-    }
+        .brush-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-    .main-container {
-      display: flex;
-      max-width: 1400px;
-      width: 100%;
-      gap: 40px;
-      align-items: flex-start;
-      opacity: 0;
-      animation: fadeIn 1s ease-out 0.5s forwards;
-    }
+        .brush-container {
+            position: relative;
+            width: 100%;
+            max-width: 1000px;
+            margin-bottom: 30px;
+        }
 
-    .brush-section {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+        .brush-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3));
+        }
 
-    /* نحافظ على حجم ثابت بصريًا للفرشاة + منع “القفز” على الهواتف */
-    .brush-container {
-      position: relative;
-      width: 100%;
-      max-width: 1000px;
-      margin-bottom: 30px;
-      /* نثبّت نسبة الأبعاد لو حبيت (اختياري). لو صورتك شفافة طويلة/عريضة، عدل القيمة. */
-      /* aspect-ratio: 5 / 3; */
-      transition: transform 0.3s ease;
-      will-change: transform;
-      -webkit-tap-highlight-color: transparent;
-    }
+        .text-overlay {
+            position: absolute;
+            top: 48%;
+            left: 35%;
+            transform: translate(-50%, -50%);
+            font-size: 50px;
+            font-weight: bold;
+            color: #1a1a1a;
+            text-align: center;
+            width: 70%;
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+            line-height: 1.2;
+            transition: all 0.3s ease;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
 
-    .brush-image {
-      width: 100%;
-      height: auto;
-      display: block;
-      filter: drop-shadow(0 10px 30px rgba(0,0,0,.3));
-      -webkit-user-drag: none;
-      user-select: none;
-      pointer-events: none;
-    }
+        .text-overlay.arabic-font {
+            font-size: 50px;
+        }
 
-    .text-overlay {
-      position: absolute;
-      top: 48%;
-      left: 35%;
-      transform: translate(-50%, -50%);
-      font-size: 50px;
-      font-weight: bold;
-      color: #1a1a1a;
-      text-align: center;
-      width: 70%;
-      text-shadow: 2px 2px 4px rgba(255,255,255,.8);
-      line-height: 1.2;
-      transition: all 0.3s ease;
-      word-wrap: break-word;
-      overflow-wrap: break-word;
-    }
+        .text-overlay.long-text {
+            font-size: 80px;
+        }
 
-    .text-overlay.arabic-font { font-size: 50px; }
-    .text-overlay.long-text { font-size: 80px; }
-    .text-overlay.very-long-text { font-size: 60px; }
+        .text-overlay.very-long-text {
+            font-size: 60px;
+        }
 
-    .controls-panel {
-      background: rgba(255,255,255,.95);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      padding: 30px;
-      box-shadow: 0 20px 40px rgba(0,0,0,.1);
-      border: 1px solid rgba(255,255,255,.2);
-      width: 400px;
-      position: sticky;
-      top: 100px;
-      margin-top: 50px;
-      transition: all .3s ease;
-    }
+        .controls-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 400px;
+            position: sticky;
+            top: 100px;
+            margin-top: 50px;
+        }
 
-    .panel-title {
-      font-size: 24px;
-      font-weight: 700;
-      color: #2c3e50;
-      margin-bottom: 25px;
-      text-align: center;
-      position: relative;
-    }
-    .panel-title::after {
-      content: '';
-      position: absolute;
-      bottom: -8px; left: 50%; transform: translateX(-50%);
-      width: 60px; height: 3px;
-      background: linear-gradient(90deg, #3498db, #9b59b6);
-      border-radius: 2px;
-    }
+        .panel-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            text-align: center;
+            position: relative;
+        }
 
-    .input-group { margin-bottom: 25px; position: relative; }
-    .input-label { display:block; font-weight:600; color:#34495e; margin-bottom:8px; font-size:14px; }
+        .panel-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #3498db, #9b59b6);
+            border-radius: 2px;
+        }
 
-    .text-input {
-      width: 100%;
-      padding: 15px 12px;
-      border: 2px solid #e0e6ed;
-      border-radius: 12px;
-      font-size: 16px; /* 16px لمنع تكبير iOS عند الفوكس */
-      transition: all .3s ease;
-      background: rgba(255,255,255,.9);
-      text-align: left;
-      text-indent: 0;
-    }
-    .text-input:focus {
-      outline: none;
-      border-color: #3498db;
-      box-shadow: 0 0 0 3px rgba(52,152,219,.1);
-      transform: translateY(-2px);
-    }
-    .text-input::placeholder { color:#95a5a6; text-align:left; }
+        .input-group {
+            margin-bottom: 25px;
+        }
 
-    .font-select {
-      width: 100%;
-      padding: 15px 18px;
-      border: 2px solid #e0e6ed;
-      border-radius: 12px;
-      font-size: 16px;
-      background: rgba(255,255,255,.9);
-      cursor: pointer;
-      transition: all .3s ease;
-      appearance: none;
-      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
-      background-repeat: no-repeat;
-      background-position: right 15px center;
-      background-size: 16px;
-      padding-right: 45px;
-    }
-    .font-select:focus {
-      outline: none;
-      border-color: #3498db;
-      box-shadow: 0 0 0 3px rgba(52,152,219,.1);
-    }
+        .input-label {
+            display: block;
+            font-weight: 600;
+            color: #34495e;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
 
-    .confirm-btn {
-      width: 100%;
-      padding: 16px 24px;
-      background: linear-gradient(135deg, #3498db, #2980b9);
-      color: #fff;
-      border: none; border-radius: 12px;
-      font-size: 16px; font-weight: 600;
-      cursor: pointer;
-      transition: all .3s ease;
-      box-shadow: 0 4px 15px rgba(52,152,219,.3);
-      position: relative; overflow: hidden;
-    }
-    .confirm-btn::before {
-      content: '';
-      position: absolute; top:0; left:-100%;
-      width:100%; height:100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent);
-      transition: left .5s;
-    }
-    .confirm-btn:hover::before { left: 100%; }
-    .confirm-btn:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 25px rgba(52,152,219,.4);
-      background: linear-gradient(135deg, #2980b9, #1f5f8b);
-    }
-    .confirm-btn:active { transform: translateY(-1px); }
+        .text-input {
+            width: 100%;
+            padding: 15px 12px;
+            border: 2px solid #e0e6ed;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+            text-align: left;
+            text-indent: 0;
+        }
 
-    .error-message {
-      background: linear-gradient(135deg, #e74c3c, #c0392b);
-      color: #fff;
-      padding: 12px 20px;
-      border-radius: 25px;
-      font-weight: 600;
-      box-shadow: 0 4px 15px rgba(231,76,60,.3);
-      animation: shake .6s ease-out;
-      text-align: center;
-      min-height: 20px;
-    }
-    .message-container { min-height: 60px; display:flex; align-items:center; justify-content:center; }
+        .text-input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+            transform: translateY(-2px);
+        }
 
-    .back-button {
-      position: fixed; top: 30px; left: 30px;
-      background: linear-gradient(135deg, #3498db, #2980b9);
-      color: #fff; border: none; border-radius: 50px;
-      padding: 15px 25px; font-size: 16px; font-weight: 600;
-      cursor: pointer; transition: all .3s ease;
-      box-shadow: 0 4px 15px rgba(52,152,219,.3);
-      text-decoration: none; display:flex; align-items:center; gap:10px;
-      z-index: 1000;
-    }
-    .back-button:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 25px rgba(52,152,219,.4);
-      background: linear-gradient(135deg, #2980b9, #1f5f8b);
-    }
-    .back-button:active { transform: translateY(-1px); }
-    .back-button .arrow { font-size: 18px; transition: transform .3s ease; }
-    .back-button:hover .arrow { transform: translateX(-3px); }
+        .text-input::placeholder {
+            color: #95a5a6;
+            text-align: left;
+        }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes shake {
-      0%,100%{ transform: translateX(0); }
-      10%,30%,50%,70%,90%{ transform: translateX(-5px); }
-      20%,40%,60%,80%{ transform: translateX(5px); }
-    }
-    @keyframes float {
-      0%,100% { transform: translateY(0) rotate(0); opacity: 0; }
-      10% { opacity: 1; }
-      90% { opacity: 1; }
-      100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
-    }
+        .font-select {
+            width: 100%;
+            padding: 15px 18px;
+            border: 2px solid #e0e6ed;
+            border-radius: 12px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.9);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 16px;
+            padding-right: 45px;
+        }
 
-    .particles {
-      position: fixed; top:0; left:0; width:100%; height:100%;
-      pointer-events:none; z-index:-1;
-    }
-    .particle {
-      position:absolute; width:4px; height:4px; background: rgba(52,152,219,.3);
-      border-radius:50%; animation: float 6s ease-in-out infinite;
-    }
+        .font-select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
 
-    /* =================== Responsive =================== */
-    @media (max-width: 1200px) {
-      .main-container { flex-direction: column; align-items: center; }
-      .controls-panel { width: 100%; max-width: 500px; position: static; margin-top: 20px; }
-    }
-    @media (max-width: 768px) {
-      body { padding: 15px; }
-      .main-container { gap: 25px; }
-      .brush-container { max-width: 600px; }
-      .text-overlay {
-        font-size: 38px; width: 80%; left: 35%; top: 48%;
-        transform: translate(-50%, -50%) scale(var(--mobile-scale, 1));
-      }
-      .controls-panel { padding: 25px; }
-      .panel-title { font-size: 20px; }
-      /* على الهواتف، لا نستخدم background-attachment: fixed */
-      body { background-attachment: scroll; }
-    }
-    @media (max-width: 480px) {
-      .brush-container { max-width: 450px; }
-      .text-overlay {
-        font-size: 30px; width: 85%; left: 35%; top: 48%;
-        transform: translate(-50%, -50%) scale(var(--mobile-scale, 1));
-      }
-      .controls-panel { padding: 20px; }
-    }
+        .confirm-btn {
+            width: 100%;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
 
-    /* تكبير أحجام العربية على الديسكتوب فقط */
-    @media (min-width: 1024px) {
-      .text-overlay.arabic-font { font-size: 100px; }
-      .text-overlay.arabic-font.long-text { font-size: 80px; }
-      .text-overlay.arabic-font.very-long-text { font-size: 60px; }
-    }
+        .confirm-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
 
-    /* منع تأثير hover يعلّق على الموبايل */
-    @media (hover:hover) and (pointer:fine) {
-      .brush-container:hover { transform: scale(1.02); }
-    }
+        .confirm-btn:hover::before {
+            left: 100%;
+        }
 
-    /* Arabic font handling */
-    .text-overlay.arabic-font { font-size: clamp(32px, 10vw, 84px); }
-    .text-overlay.arabic-font.long-text { font-size: clamp(28px, 8vw, 64px); }
-    .text-overlay.arabic-font.very-long-text { font-size: clamp(24px, 7vw, 48px); }
-  </style>
+        .confirm-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
+            background: linear-gradient(135deg, #2980b9, #1f5f8b);
+        }
+
+        .confirm-btn:active {
+            transform: translateY(-1px);
+        }
+
+        /* Screenshot Button Styles */
+        .screenshot-btn {
+            width: 100%;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+            margin-top: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .screenshot-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(39, 174, 96, 0.4);
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+
+        .screenshot-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .screenshot-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .screenshot-btn:hover::before {
+            left: 100%;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 8px;
+            text-align: center;
+            min-height: 20px;
+        }
+
+        .success-message {
+            color: #27ae60;
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 8px;
+            text-align: center;
+            min-height: 20px;
+        }
+
+        .preview-text {
+            font-size: 18px;
+            color: #7f8c8d;
+            text-align: center;
+            margin-top: 15px;
+            font-style: italic;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .main-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .controls-panel {
+                width: 100%;
+                max-width: 500px;
+                position: static;
+                margin-top: 80px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .main-container {
+                gap: 25px;
+            }
+            
+            .brush-container {
+                max-width: 600px;
+            }
+            
+            .text-overlay {
+                font-size: 38px;
+                width: 80%;
+                left: 35%;
+                top: 48%;
+                transform: translate(-50%, -50%) scale(var(--mobile-scale, 1));
+            }
+            
+            
+            
+            .controls-panel {
+                padding: 25px;
+            }
+            
+            .panel-title {
+                font-size: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .brush-container {
+                max-width: 450px;
+            }
+            
+            .text-overlay {
+                font-size: 30px;
+                width: 85%;
+                left: 35%;
+                top: 48%;
+                transform: translate(-50%, -50%) scale(var(--mobile-scale, 1));
+            }
+            
+            
+            
+            .controls-panel {
+                padding: 20px;
+            }
+        }
+
+        /* Animation for text appearance */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -30%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+
+        .text-overlay.animate {
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        /* الرجوع إلى المتجر Button Styles */
+        .back-button {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 15px 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .back-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
+            background: linear-gradient(135deg, #2980b9, #1f5f8b);
+        }
+
+        .back-button:active {
+            transform: translateY(-1px);
+        }
+
+        .back-button .arrow {
+            font-size: 18px;
+            transition: transform 0.3s ease;
+        }
+
+        .back-button:hover .arrow {
+            transform: translateX(-3px);
+        }
+
+        /* Responsive adjustments for back button */
+        @media (max-width: 768px) {
+            .back-button {
+                top: 20px;
+                left: 20px;
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .back-button {
+                top: 15px;
+                left: 15px;
+                padding: 10px 18px;
+                font-size: 13px;
+            }
+        }
+
+        /* Enhanced Loading Animation */
+        .main-container {
+            opacity: 0;
+            animation: fadeIn 1s ease-out 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Enhanced Text Overlay with Dynamic Sizing */
+        .text-overlay {
+            position: absolute;
+            top: 48%;
+            left: 35%;
+            transform: translate(-50%, -50%);
+            font-size: clamp(28px, 11.2vw, 84px);
+            font-weight: bold;
+            color: #1a1a1a;
+            text-align: center;
+            width: 70%;
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+            line-height: 1.2;
+            transition: all 0.3s ease;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        
+
+        .text-overlay.long-text {
+            font-size: clamp(25px, 8.4vw, 59px);
+        }
+
+        .text-overlay.very-long-text {
+            font-size: clamp(22px, 7vw, 45px);
+        }
+
+        /* Restore larger Arabic sizes on desktop */
+        @media (min-width: 1024px) {
+            .text-overlay.arabic-font {
+                font-size: 100px;
+            }
+            .text-overlay.arabic-font.long-text {
+                font-size: 80px;
+            }
+            .text-overlay.arabic-font.very-long-text {
+                font-size: 60px;
+            }
+        }
+
+        /* Enhanced Button Styles */
+        .confirm-btn {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .confirm-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .confirm-btn:hover::before {
+            left: 100%;
+        }
+
+        /* Download Button Styles */
+
+
+        /* Enhanced Input Focus Effects */
+        .text-input:focus,
+        .font-select:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+        /* Floating Labels */
+        .input-group {
+            position: relative;
+        }
+
+        .input-label {
+            transition: all 0.3s ease;
+        }
+
+        .text-input:focus + .input-label,
+        .text-input:not(:placeholder-shown) + .input-label {
+            transform: translateY(-25px) scale(0.85);
+            color: #3498db;
+        }
+
+        /* Enhanced Success/Error Messages */
+        .message-container {
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .success-message {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+            animation: bounceIn 0.6s ease-out;
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+            animation: shake 0.6s ease-out;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Enhanced Brush Container */
+        .brush-container {
+            position: relative;
+            width: 100%;
+            max-width: 1000px;
+            margin-bottom: 30px;
+            transition: transform 0.3s ease;
+        }
+
+        .brush-container:hover {
+            transform: scale(1.02);
+        }
+
+        /* Keyboard Shortcuts Hint */
+        .shortcuts-hint {
+            text-align: center;
+            font-size: 12px;
+            color: #95a5a6;
+            margin-top: 15px;
+            font-style: italic;
+        }
+
+        /* Particle Background Effect */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(52, 152, 219, 0.3);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+
+        /* Enhanced Panel Design */
+        .controls-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 35px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            width: 400px;
+            position: sticky;
+            top: 100px;
+            margin-top: 50px;
+            transition: all 0.3s ease;
+        }
+
+        .controls-panel:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Enhanced Input Styling */
+        .text-input, .font-select {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(52, 152, 219, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .text-input:hover, .font-select:hover {
+            border-color: rgba(52, 152, 219, 0.4);
+            background: rgba(255, 255, 255, 1);
+        }
+
+        /* Glow Effect for Active Elements */
+        .text-input:focus, .font-select:focus {
+            box-shadow: 0 0 20px rgba(52, 152, 219, 0.3);
+            border-color: #3498db;
+        }
+
+        /* Enhanced Button Animations */
+        .confirm-btn, .download-btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .confirm-btn::after, .download-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .confirm-btn:active::after, .download-btn:active::after {
+            width: 300px;
+            height: 300px;
+        }
+
+        /* Responsive Enhancements */
+        @media (max-width: 1200px) {
+            .controls-panel {
+                backdrop-filter: blur(15px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .controls-panel {
+                backdrop-filter: blur(10px);
+                border-radius: 20px;
+                padding: 25px;
+            }
+            
+            .particle {
+                width: 3px;
+                height: 3px;
+            }
+        }
+    
+/* Arabic font handling - keep size consistent */
+.text-overlay.arabic-font {
+    font-size: clamp(32px, 10vw, 84px);
+}
+
+/* Long Arabic text */
+.text-overlay.arabic-font.long-text {
+    font-size: clamp(28px, 8vw, 64px);
+}
+
+/* Very long Arabic text */
+.text-overlay.arabic-font.very-long-text {
+    font-size: clamp(24px, 7vw, 48px);
+}
+
+</style>
 </head>
 <body>
-  <div class="particles" id="particles"></div>
+    <div class="particles" id="particles"></div>
+    
+    <a href="https://fazaviptn.youcan.store/pages/brosses-a-cheveux" class="back-button">
+        <span class="arrow">←</span>
+        الرجوع إلى المتجر
+    </a>
+    
+    <div class="main-container">
+        <div class="brush-section">
+            <div class="brush-container">
+                <img src="BRUSH.NO.BG.png" alt="Decorative Brush" class="brush-image">
+                <div class="text-overlay" id="textOverlay"></div>
+            </div>
+        </div>
 
-  <a href="https://fazaviptn.youcan.store/pages/brosses-a-cheveux" class="back-button">
-    <span class="arrow">←</span> الرجوع إلى المتجر
-  </a>
+        <div class="controls-panel">
+            <h2 class="panel-title"> ! جرب وكتّب اسمك</h2>
+            
+            <div class="input-group">
+                <label for="nameInput" class="input-label">: أكتب الاسم بالعربي او الفرنسي  </label>
+                <input 
+                    type="text" 
+                    id="nameInput" 
+                    class="text-input" 
+                    placeholder="أكتب اسمك هنا..." 
+                    maxlength="15"
+                    autocomplete="off"
+                >
+            </div>
 
-  <div class="main-container">
-    <div class="brush-section">
-      <div class="brush-container">
-        <img src="BRUSH.NO.BG.png" alt="Decorative Brush" class="brush-image" />
-        <div class="text-overlay" id="textOverlay"></div>
-      </div>
+<div class="input-group">
+  <label for="fontSelect" class="input-label">: اختر نمط الخط</label>
+  <select id="fontSelect" class="font-select">
+    <option value="" selected disabled hidden>-- اختر من هنا --</option> <!-- Forces empty start -->
+    <option value="Ar1">خط عربي 1</option>
+    <option value="Ar2">خط عربي 2</option>
+    <option value="Ar3">خط عربي 3</option>
+    <option value="Fr1">خط فرنسي 1</option>
+    <option value="Fr2">خط فرنسي 2</option>
+    <option value="Fr3">خط فرنسي 3</option>
+  </select>
+</div>
+
+<script>
+  // Reset on page load
+  window.addEventListener('load', () => {
+    document.getElementById('fontSelect').selectedIndex = 0; // Selects the blank option
+  });
+</script>
+
+            <button id="confirmBtn" class="confirm-btn">
+                اضغط هنا
+            </button>
+
+            
+
+            <div class="message-container">
+                <div id="message" class="error-message"></div>
+            </div>
+
+            <div class="shortcuts-hint">
+                💡 نصيحة: اضغط Enter لكتابة الاسم
+            </div>
+            
+          
+        </div>
     </div>
 
-    <div class="controls-panel">
-      <h2 class="panel-title">! جرب وكتّب اسمك</h2>
+    <script>
+        const nameInput = document.getElementById('nameInput');
+        const fontSelect = document.getElementById('fontSelect');
+        const confirmBtn = document.getElementById('confirmBtn');
+        
+        const textOverlay = document.getElementById('textOverlay');
+        const message = document.getElementById('message');
+        const brushContainer = document.querySelector('.brush-container');
 
-      <div class="input-group">
-        <label for="nameInput" class="input-label">: أكتب الاسم بالعربي او الفرنسي</label>
-        <input type="text" id="nameInput" class="text-input" placeholder="أكتب اسمك هنا..." maxlength="15" autocomplete="off" />
-      </div>
-
-      <div class="input-group">
-        <label for="fontSelect" class="input-label">: اختر نمط الخط</label>
-        <select id="fontSelect" class="font-select">
-          <option value="" selected disabled hidden>-- اختر من هنا --</option>
-          <option value="Ar1">خط عربي 1</option>
-          <option value="Ar2">خط عربي 2</option>
-          <option value="Ar3">خط عربي 3</option>
-          <option value="Fr1">خط فرنسي 1</option>
-          <option value="Fr2">خط فرنسي 2</option>
-          <option value="Fr3">خط فرنسي 3</option>
-        </select>
-      </div>
-
-      <script>
-        // إعادة تعيين اختيار الخط عند التحميل
-        window.addEventListener('load', () => {
-          document.getElementById('fontSelect').selectedIndex = 0;
-        });
-      </script>
-
-      <button id="confirmBtn" class="confirm-btn">اضغط هنا</button>
-
-      <div class="message-container">
-        <div id="message" class="error-message" style="display:none"></div>
-      </div>
-
-      <div class="shortcuts-hint" style="text-align:center;font-size:12px;color:#95a5a6;margin-top:15px;font-style:italic;">
-        💡 نصيحة: اضغط Enter لكتابة الاسم
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const nameInput = document.getElementById('nameInput');
-    const fontSelect = document.getElementById('fontSelect');
-    const confirmBtn = document.getElementById('confirmBtn');
-    const textOverlay = document.getElementById('textOverlay');
-    const message = document.getElementById('message');
-
-    const arabicFonts = ['Ar1', 'Ar2', 'Ar3'];
-    const mobileFontScale = { Ar1: 1.6, Ar2: 1.6, Ar3: 1.6, Fr1: 1, Fr2: 1, Fr3: 1 };
-
-    const errorMessages = {
-      tooLong: 'الاسم يجب أن لا يتجاوز 15 حرفاً',
-      empty: 'الرجاء كتابة اسم',
-      noFont: 'الرجاء اختيار نمط الخط',
+        // Font mapping for Arabic fonts
+        const arabicFonts = ['Ar1', 'Ar2', 'Ar3'];
+        const mobileFontScale = {
+        'Ar1': 1.6,
+        'Ar2': 1.6,
+        'Ar3': 1.6,
+        'Fr1': 1,
+        'Fr2': 1,
+        'Fr3': 1
     };
 
-    function showMessage(text) {
-      message.textContent = text;
-      message.style.display = 'block';
-    }
-    function hideMessage() { message.style.display = 'none'; }
+        // Error messages in Arabic
+        const errorMessages = {
+            tooLong: "الاسم يجب أن لا يتجاوز 15 حرفاً",
+            empty: "الرجاء كتابة اسم",
+            noFont: "الرجاء اختيار نمط الخط"
+        };
 
-    function adjustTextSize(text) {
-      textOverlay.classList.remove('long-text', 'very-long-text');
-      if (text.length > 10) textOverlay.classList.add('very-long-text');
-      else if (text.length > 6) textOverlay.classList.add('long-text');
-    }
+        // Success messages in Arabic
+        const successMessages = {
+            success: "! تمت التجربة بنجاح",
+            ready: "! جاهز للتحميل"
+        };
 
-    function updateText() {
-      const name = nameInput.value.trim();
-      const selectedFont = fontSelect.value;
+        function showMessage(text, type) {
+            message.textContent = text;
+            message.className = type;
+            message.style.display = 'block';
+        }
 
-      if (name === '') { showMessage(errorMessages.empty); textOverlay.textContent = ''; return; }
-      if (name.length > 15) { showMessage(errorMessages.tooLong); textOverlay.textContent = ''; return; }
-      if (!selectedFont) { showMessage(errorMessages.noFont); return; }
+        function hideMessage() {
+            message.style.display = 'none';
+        }
 
-      // تطبيق الخط
-      textOverlay.style.fontFamily = selectedFont;
 
-      // نمط العربية
-      if (arabicFonts.includes(selectedFont)) textOverlay.classList.add('arabic-font');
-      else textOverlay.classList.remove('arabic-font');
 
-      // ضبط مقياس الموبايل للنص فقط (لا يغيّر حجم الفرشاة)
-      const isMobile = window.matchMedia && (window.matchMedia('(max-width: 768px)').matches || window.matchMedia('(max-width: 480px)').matches);
-      const scale = mobileFontScale[selectedFont] || 1;
-      if (isMobile) textOverlay.style.setProperty('--mobile-scale', scale);
-      else textOverlay.style.removeProperty('--mobile-scale');
+        
 
-      textOverlay.textContent = name;
-      adjustTextSize(name);
+        function showLoading() {
+            // no-op loader (removed screenshot feature)
+        }
 
-      // أنيميشن لطيف
-      textOverlay.classList.add('animate');
-      setTimeout(() => textOverlay.classList.remove('animate'), 500);
+        function hideLoading() {
+            // no-op loader (removed screenshot feature)
+        }
 
-      hideMessage();
-    }
+function adjustTextSize(text) {
+            // Remove existing size classes
+            textOverlay.classList.remove('long-text', 'very-long-text');
+            
+            if (text.length > 10) {
+                textOverlay.classList.add('very-long-text');
+            } else if (text.length > 6) {
+                textOverlay.classList.add('long-text');
+            }
+        }
 
-    confirmBtn.addEventListener('click', updateText);
-    nameInput.addEventListener('input', hideMessage);
-    nameInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') updateText(); });
-    fontSelect.addEventListener('change', () => { if (textOverlay.textContent) updateText(); });
+        function updateText() {
+            const name = nameInput.value.trim();
+            const selectedFont = fontSelect.value;
+            
+            // Validation
+            if (name === '') {
+                showMessage(errorMessages.empty, 'error-message');
+                textOverlay.textContent = '';
+                return;
+            }
+            
+            if (name.length > 15) {
+                showMessage(errorMessages.tooLong, 'error-message');
+                textOverlay.textContent = '';
+                return;
+            }
+            
+            if (!selectedFont) {
+                showMessage(errorMessages.noFont, 'error-message');
+                return;
+            }
+            
+            // Show loading
+            showLoading();
+            
+            // Simulate processing time for better UX
+            setTimeout(() => {
+                // Apply font
+                textOverlay.style.fontFamily = selectedFont;
+                
+                // Apply Arabic font styling
+                if (arabicFonts.includes(selectedFont)) {
+                    textOverlay.classList.add('arabic-font');
+                } else {
+                    textOverlay.classList.remove('arabic-font');
+                }
 
-    // تحسينات بسيطة
-    nameInput.addEventListener('focus', function () { this.select(); this.setSelectionRange(0, 0); });
+                // Normalize mobile size per font
+                const isMobile = window.matchMedia && (window.matchMedia('(max-width: 768px)').matches || window.matchMedia('(max-width: 480px)').matches);
+                const scale = mobileFontScale[selectedFont] || 1;
+                if (isMobile) {
+                    textOverlay.style.setProperty('--mobile-scale', scale);
+                } else {
+                    textOverlay.style.removeProperty('--mobile-scale');
+                }
+                
+                // Update text and adjust size
+                textOverlay.textContent = name;
+                adjustTextSize(name);
+                
+                // Add animation
+                textOverlay.classList.add('animate');
+                
+                // Hide loading and show success
+                hideLoading();
+                showMessage(successMessages.success, 'success-message');
+                
+                // Remove animation class after animation completes
+                setTimeout(() => {
+                    textOverlay.classList.remove('animate');
+                }, 500);
+            }, 300);
+        }
 
-    // تأثير الجزيئات الخفيفة بالخلفية
-    window.addEventListener('load', function () {
-      document.body.style.opacity = '0';
-      setTimeout(() => {
-        document.body.style.transition = 'opacity 1s ease-in';
-        document.body.style.opacity = '1';
-      }, 100);
 
-      initParticles();
-    });
 
-    function initParticles() {
-      const particlesContainer = document.getElementById('particles');
-      const particleCount = 15;
-      for (let i = 0; i < particleCount; i++) createParticle(particlesContainer);
-    }
-    function createParticle(container) {
-      const particle = document.createElement('div');
-      particle.className = 'particle';
-      particle.style.left = Math.random() * 100 + '%';
-      particle.style.animationDelay = Math.random() * 6 + 's';
-      particle.style.animationDuration = (Math.random() * 3 + 4) + 's';
-      container.appendChild(particle);
-      setTimeout(() => { if (particle.parentNode) { particle.remove(); createParticle(container); } }, 8000);
-    }
-  </script>
+        function clearMessage() {
+            hideMessage();
+        }
+
+        // Simple screenshot function
+        
+        // Event listeners
+        confirmBtn.addEventListener('click', updateText);
+        
+        
+        nameInput.addEventListener('input', clearMessage);
+        nameInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                updateText();
+            }
+        });
+        
+        fontSelect.addEventListener('change', function() {
+            if (textOverlay.textContent) {
+                updateText();
+            }
+        });
+
+        // Real-time preview on font change
+        fontSelect.addEventListener('change', function() {
+            if (textOverlay.textContent) {
+                const selectedFont = fontSelect.value;
+                textOverlay.style.fontFamily = selectedFont;
+                
+                if (arabicFonts.includes(selectedFont)) {
+                    textOverlay.classList.add('arabic-font');
+                } else {
+                    textOverlay.classList.remove('arabic-font');
+                }
+
+                // Update mobile scaling live
+                const isMobile = window.matchMedia && (window.matchMedia('(max-width: 768px)').matches || window.matchMedia('(max-width: 480px)').matches);
+                const scale = mobileFontScale[selectedFont] || 1;
+                if (isMobile) {
+                    textOverlay.style.setProperty('--mobile-scale', scale);
+                } else {
+                    textOverlay.style.removeProperty('--mobile-scale');
+                }
+            }
+        });
+
+        // Focus management
+        nameInput.addEventListener('focus', function() {
+            this.select();
+            this.setSelectionRange(0, 0);
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 'Enter':
+                        e.preventDefault();
+                        updateText();
+                        break;
+
+                }
+            }
+        });
+
+        // Initialize with first font
+        fontSelect.value = 'Fr1';
+        
+        // Test image loading
+        function testImageLoading() {
+            const testImg = new Image();
+            testImg.onload = function() {
+                console.log('✅ Brush image loaded successfully');
+                console.log('Image dimensions:', testImg.naturalWidth, 'x', testImg.naturalHeight);
+                console.log('Image source:', testImg.src);
+            };
+            testImg.onerror = function() {
+                console.error('❌ Failed to load brush image');
+                console.error('Image path:', testImg.src);
+                showMessage("تحذير: لا يمكن تحميل صورة الفرشاة", 'error-message');
+            };
+            testImg.src = 'BRUSH.NO.BG.png';
+        }
+
+
+
+        // Test brush image loading for canvas
+        function testBrushImageForCanvas() {
+            const testImg = new Image();
+            testImg.onload = function() {
+                console.log('✅ Brush image ready for canvas:', testImg.naturalWidth, 'x', testImg.naturalHeight);
+                console.log('Image source:', testImg.src);
+            };
+            testImg.onerror = function() {
+                console.error('❌ Brush image failed to load for canvas');
+                console.error('Image path:', testImg.src);
+            };
+            testImg.src = 'BRUSH.NO.BG.png';
+        }
+        
+        // Add page load animation
+        window.addEventListener('load', function() {
+            document.body.style.opacity = '0';
+            setTimeout(() => {
+                document.body.style.transition = 'opacity 1s ease-in';
+                document.body.style.opacity = '1';
+            }, 100);
+            
+            // Initialize particles
+            initParticles();
+            
+            // Test image loading
+            testImageLoading();
+            
+            // Test brush image for canvas
+            testBrushImageForCanvas();
+        });
+
+        // Particle System
+        function initParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 15;
+            
+            for (let i = 0; i < particleCount; i++) {
+                createParticle(particlesContainer);
+            }
+        }
+
+        function createParticle(container) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            
+            // Random positioning and timing
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 6 + 's';
+            particle.style.animationDuration = (Math.random() * 3 + 4) + 's';
+            
+            container.appendChild(particle);
+            
+            // Remove and recreate particle after animation
+            setTimeout(() => {
+                if (particle.parentNode) {
+                    particle.remove();
+                    createParticle(container);
+                }
+            }, 8000);
+        }
+    </script>
 </body>
-</html>
+</html> 
