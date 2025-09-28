@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+  (function () {
+    var p = location.pathname;
+    var starts =
+      p.indexOf("/تجربة-الاسم") === 0 ||
+      p.indexOf("/%D8%AA%D8%AC%D8%B1%D8%A8%D8%A9-%D8%A7%D9%84%D8%A7%D8%B3%D9%85") === 0;
+    if (starts && location.hostname.endsWith("fazavip.tn")) {
+      document.write('<base href="/%D8%AA%D8%AC%D8%B1%D8%A8%D8%A9-%D8%A7%D9%84%D8%A7%D8%B3%D9%85/">');
+    }
+  })();
+</script>
 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
